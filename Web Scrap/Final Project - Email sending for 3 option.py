@@ -1,41 +1,53 @@
-#Final project for webscraping and automation
-#Final Project - Auto Gmail Sending for Currency & Book Info with Weather also 🌍📩
-
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-import smtplib
-from email.message import EmailMessage
-import schedule
+import getpass
 import time
+from email.message import EmailMessage
+import smtplib
+from urllib.parse import urljoin
+
+from bs4 import BeautifulSoup
+import requests
+import schedule
+
 
 # Email sending function (takes body, subject, receiver)
-def mail_sender(name, body, subject, receiver):
-    sender = "jobayerhasanshiplu@gmail.com"
-    app_password = "eovd ozwp uyud pskh"
-
+def mail_sender(name, body, subject, receiver, sender, app_password):
     msg = EmailMessage()
-    msg['Subject'] = subject
-    msg['From'] = sender
-    msg['To'] = receiver
+    msg["Subject"] = subject
+    msg["From"] = sender
+    msg["To"] = receiver
 
-    body = f"Hello {name} 👋, \n\nGlad to see you here 😊. We hope that you are also well 💙.  \nThis Electronic mail (E-mail) is being sent as a project of Python programming Web and API scrapping 🧠💻. As you asked to know, we are here to assist you always with updated detabase and informations 📊✨. Here you go:\n\n" + body + "\nEveryday you will get updates via Gmail from us.\nThank you for taking our service! Please visit us again 🙏. We are all ears for you to assist 🤝.\n\nExplore more of our projects 🌐: https://rayaantasnim.github.io/username.github.io-IDAI-company-/Intro.html \n\nBest Regards,\nRayaan Tasnim ✍️\nPython Programmer"
-    msg.set_content(body)
+    full_body = (
+        f"Hello {name} 👋, \n\n"
+        f"Glad to see you here 😊. We hope that you are also well 💙.  \n"
+        f"This Electronic mail (E-mail) is being sent as a project of Python programming Web and API scrapping 🧠💻. "
+        f"As you asked to know, we are here to assist you always with updated detabase and informations 📊✨. Here you go:\n\n"
+        f"{body}\n"
+        f"Everyday you will get updates via Gmail from us.\n"
+        f"Thank you for taking our service! Please visit us again 🙏. We are all ears for you to assist 🤝.\n\n"
+        f"Explore more of our projects 🌐: https://rayaantasnim.github.io/username.github.io-IDAI-company-/Intro.html \n\n"
+        f"Best Regards,\nRayaan Tasnim ✍️\nPython Programmer"
+    )
+    msg.set_content(full_body)
 
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.login(sender, app_password)
-    server.send_message(msg)
-    server.quit()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(sender, app_password)
+        server.send_message(msg)
     print("📧 Email sent successfully! ✅")
 
 
 # Currency exchange rate function 💰
-def currency_auto():
-    api_key = "cur_live_bHpelBdV9C9b3x9X7BXJysHbEKU5e7nqf0sQIlKT"
-    url = f"https://api.currencyapi.com/v3/latest?apikey={api_key}&base_currency=USD&currencies=BDT,EUR,INR,GBP,CAD,AUD,JPY,CNY,SAR,AED,CHF,PKR,NZD,SGD,HKD,KRW,THB,MYR,RUB,TRY,ZAR,NGN,EGP"
+def currency_auto(currency_api_key):
+    url = (
+        f"https://api.currencyapi.com/v3/latest?apikey={currency_api_key}"
+        f"&base_currency=USD&currencies=BDT,EUR,INR,GBP,CAD,AUD,JPY,CNY,SAR,AED,CHF,PKR,NZD,SGD,HKD,KRW,THB,MYR,RUB,TRY,ZAR,NGN,EGP"
+    )
 
-    response = requests.get(url)
+    response = requests.get(url, timeout=15)
+    response.raise_for_status()
     data = response.json()
+
+    if "data" not in data:
+        raise ValueError("Invalid response from CurrencyAPI. Please check your API key.")
 
     bangladeshi_taka = data["data"]["BDT"]["value"]
     euro = data["data"]["EUR"]["value"]
@@ -115,109 +127,92 @@ Nigerian Naira: {nigerian_naira}
 Egyptian Pound: {egyptian_pound}
 """
 
-    mail_sender(name, report, "Currency Exchange Rates 💰", gmail)
+    mail_sender(name, report, "Currency Exchange Rates 💰", gmail, sender_email, sender_app_password)
     print("\n✔ Currency report sent to your Gmail 📩!")
-    return(bangladeshi_taka, euro, indian_rupee, british_pound, canadian_dollar, australian_dollar, japanese_yen, chinese_yuan, saudi_riyal, uae_dirham, swiss_franc, pakistani_rupee, new_zealand_dollar, singapore_dollar, hong_kong_dollar, south_korean_won, thai_baht, malaysian_ringgit, russian_ruble, turkey, south_african_rand, nigerian_naira, egyptian_pound)
+    return (
+        bangladeshi_taka, euro, indian_rupee, british_pound, canadian_dollar, australian_dollar,
+        japanese_yen, chinese_yuan, saudi_riyal, uae_dirham, swiss_franc, pakistani_rupee,
+        new_zealand_dollar, singapore_dollar, hong_kong_dollar, south_korean_won, thai_baht,
+        malaysian_ringgit, russian_ruble, turkey, south_african_rand, nigerian_naira, egyptian_pound,
+    )
 
-def search_box(bangladeshi_taka, euro, indian_rupee, british_pound, canadian_dollar, australian_dollar, japanese_yen, chinese_yuan, saudi_riyal, uae_dirham, swiss_franc, pakistani_rupee, new_zealand_dollar, singapore_dollar, hong_kong_dollar, south_korean_won, thai_baht, malaysian_ringgit, russian_ruble, turkey, south_african_rand, nigerian_naira, egyptian_pound):
+
+def search_box(
+    bangladeshi_taka, euro, indian_rupee, british_pound, canadian_dollar, australian_dollar,
+    japanese_yen, chinese_yuan, saudi_riyal, uae_dirham, swiss_franc, pakistani_rupee,
+    new_zealand_dollar, singapore_dollar, hong_kong_dollar, south_korean_won, thai_baht,
+    malaysian_ringgit, russian_ruble, turkey, south_african_rand, nigerian_naira, egyptian_pound,
+):
     while True:
-        search_field = input("\n🔎 Search currency (bdt, eur, inr, gbp, cad, aud, jpy, cny, sar, aed, chf, pkr, nzd, sgd, hkd, krw, thb, myr, rub, try, zar, ngn, egp) or type break 🚪: ").strip().lower()
+        search_field = input(
+            "\n🔎 Search currency (bdt, eur, inr, gbp, cad, aud, jpy, cny, sar, aed, chf, pkr, nzd, sgd, hkd, krw, thb, myr, rub, try, zar, ngn, egp) or type break 🚪: "
+        ).strip().lower()
 
         if search_field == "break":
             print("Search Completed! ✅")
             break
-
         elif search_field == "bdt":
             print(f"🇧🇩 Bangladeshi Taka: {bangladeshi_taka}")
-
         elif search_field == "eur":
             print(f"🇪🇺 Euro: {euro}")
-
         elif search_field == "inr":
             print(f"🇮🇳 Indian Rupee: {indian_rupee}")
-
         elif search_field == "gbp":
             print(f"🇬🇧 British Pound: {british_pound}")
-
         elif search_field == "cad":
             print(f"🇨🇦 Canadian Dollar: {canadian_dollar}")
-
         elif search_field == "aud":
             print(f"🇦🇺 Australian Dollar: {australian_dollar}")
-
         elif search_field == "jpy":
             print(f"🇯🇵 Japanese Yen: {japanese_yen}")
-
         elif search_field == "cny":
             print(f"🇨🇳 Chinese Yuan: {chinese_yuan}")
-
         elif search_field == "sar":
             print(f"🇸🇦 Saudi Riyal: {saudi_riyal}")
-
         elif search_field == "aed":
             print(f"🇦🇪 UAE Dirham: {uae_dirham}")
-
         elif search_field == "chf":
             print(f"🇨🇭 Swiss Franc: {swiss_franc}")
-
         elif search_field == "pkr":
             print(f"🇵🇰 Pakistani Rupee: {pakistani_rupee}")
-
         elif search_field == "nzd":
             print(f"🇳🇿 New Zealand Dollar: {new_zealand_dollar}")
-
         elif search_field == "sgd":
             print(f"🇸🇬 Singapore Dollar: {singapore_dollar}")
-
         elif search_field == "hkd":
             print(f"🇭🇰 Hong Kong Dollar: {hong_kong_dollar}")
-
         elif search_field == "krw":
             print(f"🇰🇷 South Korean Won: {south_korean_won}")
-
         elif search_field == "thb":
             print(f"🇹🇭 Thai Baht: {thai_baht}")
-
         elif search_field == "myr":
             print(f"🇲🇾 Malaysian Ringgit: {malaysian_ringgit}")
-
         elif search_field == "rub":
             print(f"🇷🇺 Russian Ruble: {russian_ruble}")
-
         elif search_field == "try":
             print(f"🇹🇷 Turkish Lira: {turkey}")
-
         elif search_field == "zar":
             print(f"🇿🇦 South African Rand: {south_african_rand}")
-
         elif search_field == "ngn":
             print(f"🇳🇬 Nigerian Naira: {nigerian_naira}")
-
         elif search_field == "egp":
             print(f"🇪🇬 Egyptian Pound: {egyptian_pound}")
-
         else:
             print("❌ Not found in the detabase!")
 
-def currency():
-    bangladeshi_taka, euro, indian_rupee, british_pound, canadian_dollar, australian_dollar, japanese_yen, chinese_yuan, saudi_riyal, uae_dirham, swiss_franc, pakistani_rupee, new_zealand_dollar, singapore_dollar, hong_kong_dollar, south_korean_won, thai_baht, malaysian_ringgit, russian_ruble, turkey, south_african_rand, nigerian_naira, egyptian_pound = currency_auto()
 
-    search_box(
-        bangladeshi_taka, euro, indian_rupee, british_pound,
-        canadian_dollar, australian_dollar, japanese_yen,
-        chinese_yuan, saudi_riyal, uae_dirham, swiss_franc,
-        pakistani_rupee, new_zealand_dollar, singapore_dollar,
-        hong_kong_dollar, south_korean_won, thai_baht,
-        malaysian_ringgit, russian_ruble, turkey,
-        south_african_rand, nigerian_naira, egyptian_pound
-    )
+def currency(currency_api_key):
+    rates = currency_auto(currency_api_key)
+    search_box(*rates)
+
 
 # Book scraping function 📚
 def book():
     url = "https://books.toscrape.com/"
     agent = {"User-Agent": "Mozilla/5.0"}
 
-    response = requests.get(url, headers=agent)
+    response = requests.get(url, headers=agent, timeout=15)
+    response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
     div = soup.select(".image_container a")
 
@@ -227,24 +222,25 @@ def book():
     for i in div[:15]:
         href = i.get("href")
         full_link = urljoin(url, href)
-        r = requests.get(full_link, headers=agent)
+        r = requests.get(full_link, headers=agent, timeout=15)
+        r.raise_for_status()
         s = BeautifulSoup(r.text, "html.parser")
 
         title = s.select_one(".product_main h1").text.strip()
         price = s.select_one(".price_color").text.strip()
-        price = price.replace("Â£", "")
+        price = price.replace("Â£", "").replace("£", "")
         price = price + " GBP 💷"
         availability = s.select_one(".instock.availability").text.strip()
 
         print(f"📘 Title: {title}\n💰 Price: {price}\n📦 Availability: {availability}\n")
         report += f"Title: {title}\nPrice: {price}\nAvailability: {availability}\n\n"
 
-    mail_sender(name, report, "Book List Information 📚", gmail)
+    mail_sender(name, report, "Book List Information 📚", gmail, sender_email, sender_app_password)
     print("\n✔ Book list sent to your Gmail 📩!")
 
 
 # Weather function 🌦️
-def weather(data):
+def weather(data, target_city):
     temp = data["main"]["temp"]
     feels_like = data["main"]["feels_like"]
     max_temp = data["main"]["temp_max"]
@@ -265,16 +261,12 @@ def weather(data):
 
     if temp >= 35:
         suggestions.append("• Extremely hot weather 🔥 Drink water 💧")
-
     elif temp >= 25:
         suggestions.append("• Warm weather ☀️ Light clothes recommended")
-
     elif temp >= 15:
         suggestions.append("• Pleasant weather 😊 Normal clothing fine")
-
     elif temp >= 5:
         suggestions.append("• Cool weather 🧥 Light jacket needed")
-
     else:
         suggestions.append("• Cold weather 🥶 Stay warm")
 
@@ -283,7 +275,6 @@ def weather(data):
 
     if humidity >= 80:
         suggestions.append("• High humidity 💦 Stay hydrated")
-
     elif humidity <= 30:
         suggestions.append("• Dry air 🌵 Drink water")
 
@@ -354,35 +345,44 @@ Suggestions:
 {suggestion_text}
 """
 
-    mail_sender(name, report, f"Weather Update 🌦️ - {city}", gmail)
+    mail_sender(name, report, f"Weather Update 🌦️ - {target_city}", gmail, sender_email, sender_app_password)
     print("\n✔ Weather report sent to your Gmail 📩!")
 
-def weather_auto(weather_city):
-    api_url = f"https://api.openweathermap.org/data/2.5/weather?q={weather_city}&appid={api_key}&units=metric"
-    response = requests.get(api_url)
-    data = response.json()
-    weather(data)
 
-# Starting 
+def weather_auto(weather_city, weather_api_key):
+    api_url = f"https://api.openweathermap.org/data/2.5/weather?q={weather_city}&appid={weather_api_key}&units=metric"
+    response = requests.get(api_url, timeout=15)
+    response.raise_for_status()
+    data = response.json()
+    weather(data, weather_city)
+
+
+# Starting
 print("------------------------------ Welcome! 👋 ------------------------------")
+sender_email = input("📤 Enter sender Gmail address: ").strip().lower()
+sender_app_password = getpass.getpass("🔑 Enter sender Gmail App Password (input hidden): ").strip()
+
+currency_api_key = ""
+weather_api_key = ""
+city = ""
+
 name = input("👤 Enter your name pls: ").title().strip()
 gmail = input("📧 Enter your G-mail account: ").strip()
 
-while(True):
-    if (gmail == "jobayerhasanshiplu@gmail.com"):
+while True:
+    if gmail.lower() == sender_email:
         print("❌ The sender and receiver can't be same 😅")
         gmail = input("📧 Try again pls: ").strip()
-
     elif "@" in gmail and "." in gmail:
         print("✅ Thank you!! \nWe will send you updates 😊 if you order 📩")
         break
-
     else:
         gmail = input("❌ Wrong gmail provided! Try again 📧: ").strip()
+
 gmail = gmail.lower()
 
 # Menu
-while(True):
+while True:
     print("\n📋 Menu:")
     print("1.   Current Currency Exchange Rate 💰")
     print("2.   Best Seller Book List 📚")
@@ -392,7 +392,9 @@ while(True):
     print("------------------------------⚙️ Processing... ⚙️ ------------------------------")
 
     if order == "1":
-        currency()
+        while not currency_api_key:
+            currency_api_key = input("🔐 Enter your CurrencyAPI key: ").strip()
+        currency(currency_api_key)
         break
 
     elif order == "2":
@@ -400,20 +402,22 @@ while(True):
         break
 
     elif order == "3":
-        city = input("Enter your desired location pls:").title().strip()
-        api_key = "d3e32d448f57160e352fefe7e60766e9"
+        while not weather_api_key:
+            weather_api_key = input("🔐 Enter your OpenWeatherMap API key: ").strip()
+        city = input("Enter your desired location pls: ").title().strip()
 
         while True:
-            api_url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
-            response = requests.get(api_url)
+            api_url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_api_key}&units=metric"
+            response = requests.get(api_url, timeout=15)
+            response.raise_for_status()
             data = response.json()
 
             if str(data.get("cod")) != "200":
                 print("\n❌ City not found! Try again 😢")
-                city = input("Enter again: ")
+                city = input("Enter again: ").title().strip()
             else:
                 print("\n🌤️ Let's Explore!!! 🚀\n")
-                weather(data)
+                weather(data, city)
                 break
         break
 
@@ -427,16 +431,19 @@ print("Everyday at 12:00 pm ⏰, you will get email for updates.")
 print("🙏 Thank you for taking our service 💕")
 print("🤝 We are always here to accompany you!")
 
+
 # ---------------- SCHEDULE (12:00 PM DAILY) ----------------
 def job():
-    if order == "1":
-        currency_auto()
+    try:
+        if order == "1":
+            currency_auto(currency_api_key)
+        elif order == "2":
+            book()
+        elif order == "3":
+            weather_auto(city, weather_api_key)
+    except Exception as exc:
+        print(f"⚠️ Scheduled job error: {exc}")
 
-    elif order == "2":
-        book()
-
-    elif order == "3":
-        weather_auto(city)
 
 schedule.every().day.at("12:00").do(job)
 while True:
